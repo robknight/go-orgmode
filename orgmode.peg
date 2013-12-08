@@ -1,0 +1,69 @@
+
+package orgmode
+
+type OrgMode Peg {
+}
+
+Start
+  <- (Markup / Content)* / EOF
+
+Markup
+  <- OrgNode 
+  / Properties
+
+Headline
+  <- Stars _ HeadlineText
+
+OrgNode
+  <- Headline LineEnd
+
+ContentLine
+  <- !Markup < (!LineEnd .)+ > LineEnd?
+
+Content
+  <- (ContentLine / LineEnd)+
+
+HeadlineText
+  <- < (!LineEnd .)+ >
+
+Stars
+  <- ('***' / '**' / '*')
+
+PropertiesBegin
+  <- _ ':PROPERTIES:' _ LineEnd
+
+PropertiesEnd
+  <- _ ':END:' _ LineEnd?
+
+Properties
+  <- PropertiesBegin PropertyPair* PropertiesEnd
+
+PropertyPair
+  <- _ PropertyKey _ PropertyValue _
+
+PropertyKeyChar
+  <- IdentifierChar
+  / '-'
+
+PropertyKey
+  <- !PropertiesEnd ':' < PropertyKeyChar+ > ':'
+
+PropertyValue
+  <- (!LineEnd .)* LineEnd
+
+IdentifierChar
+  <- [[a-z]]
+  / '_'
+_
+  <- (WhiteSpace)*
+__
+  <- (WhiteSpace / LineEnd)*
+
+LineEnd
+  <- [\r\n]
+
+WhiteSpace
+  <- [\t ]
+
+EOF
+  <- !.
